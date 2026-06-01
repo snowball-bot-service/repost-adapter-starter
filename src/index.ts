@@ -47,8 +47,17 @@ const adapter: Adapter = {
    * @param ctx
    */
   async initState(ctx: AdapterContext) {
+    // 读取配置（可选）。配置由核心通过 `ctx.config(key)` 提供。
+    // 比如 API key、限流参数等，建议把所有可调项都从 config 取。
+    const apiKey = ctx.config<string>('apiKey');
+    if (!apiKey) {
+      ctx.logger.warn(
+        `[${provider}] no apiKey configured, falling back to public API`
+      );
+    }
+
     // 注册转发请求处理器
-    ctx.on('onRepostRequest', (req) => handle(req, ctx, {  }));
+    ctx.on('onRepostRequest', (req) => handle(req, ctx, { apiKey }));
 
     ctx.logger.info(`[${provider}] Adapter initialized.`);
   },
@@ -72,7 +81,7 @@ const adapter: Adapter = {
 // ============================================================================
 
 interface AdapterOptions {
-
+  apiKey?: string;
 }
 
 async function handle(
