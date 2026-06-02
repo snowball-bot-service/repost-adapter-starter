@@ -4,6 +4,15 @@ import type {
   RepostAdapterRequestParams,
   RepostAdapterResponsePayload, SocialProvider,
 } from '@snowball-bot/repost-adapter';
+import { HttpManager } from './utils/http';
+
+export { HttpManager, HttpError } from './utils/http';
+export type {
+  HttpManagerOptions,
+  HttpRequestOptions,
+  HttpMethod,
+  QueryParams,
+} from './utils/http';
 
 // ============================================================================
 // TODO: 1. 修改下方 manifest 信息
@@ -19,12 +28,43 @@ import type {
 //
 // ============================================================================
 
-const provider: SocialProvider = "REPLACE_ME";
+interface AdapterOptions {
+  apiKey?: string;
+}
+
+/**
+ * 常量仓库
+ * @param apiBaseURL API 基础地址
+ * @param provider 提供商
+ * @param apiTimeout API 超时时间（毫秒）
+ * @param apiRetries API 重试次数
+ */
+const CONST: {
+  apiBaseURL: string,
+  provider: SocialProvider,
+  apiTimeout: number,
+  apiRetries: number,
+} = {
+  provider: "wilddream",
+  apiBaseURL: "https://wilddream.net",
+  apiTimeout: 5000,
+  apiRetries: 1,
+}
+
+/**
+ * 实例仓库
+ * @param instance.http 模块级 HTTP 客户端, 在 initState 中创建, dispose 中销毁
+ * */
+const INSTANCE: {
+  http: HttpManager | null;
+} = {
+  http: null,
+}
 
 const adapter: Adapter = {
   manifest: {
-    name: 'repost-adapter-REPLACE_ME',
-    provider: provider,
+    name: `repost-adapter-${CONST.provider}`,
+    provider: CONST.provider,
     whitelistHosts: ['example.com'],
     version: 1,
     author: 'REPLACE_ME',
@@ -52,14 +92,23 @@ const adapter: Adapter = {
     const apiKey = ctx.config<string>('apiKey');
     if (!apiKey) {
       ctx.logger.warn(
-        `[${provider}] no apiKey configured, falling back to public API`
+        `[${CONST.provider}] no apiKey configured, falling back to public API`
       );
     }
+
+    // 创建 HTTP 客户端 (基于 fetch), 统一处理 baseUrl / 鉴权 / 超时 / 重试
+    INSTANCE.http = new HttpManager({
+      baseUrl: CONST.apiBaseURL,
+      timeoutMs: CONST.apiTimeout,
+      retries: CONST.apiRetries,
+      headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : undefined,
+      logger: ctx.logger,
+    });
 
     // 注册转发请求处理器
     ctx.on('onRepostRequest', (req) => handle(req, ctx, { apiKey }));
 
-    ctx.logger.info(`[${provider}] Adapter initialized.`);
+    ctx.logger.info(`[${CONST.provider}] Adapter initialized.`);
   },
 
   /**
@@ -68,7 +117,9 @@ const adapter: Adapter = {
    * eg. 关闭 HTTP 客户端, 清空定时器, 断开长连接...
    */
   async dispose() {
-
+    // 中断在途请求并释放 HTTP 客户端
+    INSTANCE.http?.dispose();
+    INSTANCE.http = null;
   },
 };
 
@@ -80,16 +131,12 @@ const adapter: Adapter = {
 //
 // ============================================================================
 
-interface AdapterOptions {
-  apiKey?: string;
-}
-
 async function handle(
   req: RepostAdapterRequestParams,
   ctx: AdapterContext,
   options: AdapterOptions
 ): Promise<RepostAdapterResponsePayload | null> {
-  ctx.logger.debug(`[${provider}] fetching ${req.source}`);
+  ctx.logger.debug(`[${CONST.provider}] fetching ${req.source}`);
 
   // TODO: 1) 从 req.url 解析出 post id / 用户名 等
   // const postId = extractPostId(req.url);
@@ -108,7 +155,7 @@ async function handle(
   // TODO: 3) 转换成标准 response 格式
   return {
     code: req.code,
-    provider: provider,
+    provider: CONST.provider,
     originalUrl: req.source,
     method: "post",
 
