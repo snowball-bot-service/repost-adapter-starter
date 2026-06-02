@@ -2,6 +2,7 @@
   "name": "repost-adapter-REPLACE_ME",
   "version": "0.1.0",
   "description": "TODO: describe your adapter",
+  "author": "TODO: your name",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -35,7 +36,6 @@
     "snowball-bot",
     "repost-adapter"
   ],
-  "author": "TODO: your name",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
