@@ -65,6 +65,24 @@ git push origin v0.1.0
 
 The release workflow will publish to npm automatically.
 
+## Local development with mock host
+
+You can test your adapter without setting up the core project:
+
+```bash
+# Copy env template and fill in any credentials your adapter needs
+cp .env.example .env
+# Edit .env
+
+# Run the playground (edit `dev/playground.ts` to set test URLs)
+pnpm dev:play
+```
+
+The mock host in `dev/harness.ts` simulates what the real core does:
+it builds an `AdapterContext`, calls `initState`, and triggers your
+`onRepostRequest` handler. Use it to quickly iterate before integrating
+with a real core deployment.
+
 ## Contract reference
 
 See [`@snowball-bot/repost-adapter`](https://www.npmjs.com/package/@snowball-bot/repost-adapter) for the full API reference.

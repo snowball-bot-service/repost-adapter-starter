@@ -20,8 +20,14 @@ export function extractHandleId(
   source: string, numberOfPath: number
 ): [RepostMethod, string] {
   const { pathname } = extractURL(source);
-  const parts = pathname.split("/");
-  return [ "post", parts[numberOfPath] ];
+  const paths = pathname.split("/");
+
+  // 如果分割的 Paths 首个为空，则删除
+  if (paths.length > 1 && paths[0].length === 0) {
+    paths.shift();
+  }
+
+  return [ "post", paths[numberOfPath] ];
 }
 
 /**

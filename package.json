@@ -25,6 +25,8 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
+    "dev:play": "tsx dev/playground.ts",
+    "dev:play:watch": "tsx watch dev/playground.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",
@@ -51,7 +53,9 @@
     "prettier": "^3.0.0",
     "tsup": "^8.5.0",
     "typescript": "^6.0.0",
-    "vitest": "^2.0.0"
+    "vitest": "^2.0.0",
+    "tsx": "^4.0.0",
+    "dotenv": "^17.4.2"
   },
   "engines": {
     "node": ">=18"

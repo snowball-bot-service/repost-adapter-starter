@@ -46,8 +46,8 @@ const CONST: {
   apiTimeout: number,
   apiRetries: number,
 } = {
-  provider: "wilddream",
-  apiBaseURL: "https://wilddream.net",
+  provider: "REPLACE_ME",
+  apiBaseURL: "https://example.com",
   apiTimeout: 5000,
   apiRetries: 1,
 }
