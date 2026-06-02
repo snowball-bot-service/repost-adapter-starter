@@ -1,10 +1,11 @@
-import type {
+import {
   Adapter,
-  AdapterContext,
+  AdapterContext, ParseLinkFailedException,
   RepostAdapterRequestParams,
   RepostAdapterResponsePayload, SocialProvider,
 } from '@snowball-bot/repost-adapter';
 import { HttpManager } from './utils/http';
+import {extractHandleId, extractURL, fetchHandleDataFromAPI} from "./manager";
 
 export { HttpManager, HttpError } from './utils/http';
 export type {
@@ -138,11 +139,11 @@ async function handle(
 ): Promise<RepostAdapterResponsePayload | null> {
   ctx.logger.debug(`[${CONST.provider}] fetching ${req.source}`);
 
-  // TODO: 1) 从 req.url 解析出 post id / 用户名 等
-  // const postId = extractPostId(req.url);
+  // TODO: 1) 从 req.source 解析出 Handle Id
+  const [handleMethod, handleId] = extractHandleId(req.source, 1);
 
   // TODO: 2) 调用平台 API 拿到原始数据
-  // const raw = await fetchFromApi(postId, options.apiKey);
+  const handleData = await fetchHandleDataFromAPI(INSTANCE.http!, handleMethod, handleId);
 
   const postId = "";
   const publishAt = new Date();

@@ -41,7 +41,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@snowball-bot/repost-adapter": "^1.0.1"
+    "@snowball-bot/repost-adapter": "^1.0.4"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
