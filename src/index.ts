@@ -1,11 +1,15 @@
 import {
   Adapter,
-  AdapterContext, ParseLinkFailedException,
-  RepostAdapterRequestParams,
-  RepostAdapterResponsePayload, SocialProvider,
+  AdapterContext,
+  AdapterProcessRequestParams, AdapterProcessResponsePayload,
+  AdapterRepostRequestParams,
+  AdapterRepostResponsePayload,
+  SocialProvider,
 } from '@snowball-bot/repost-adapter';
 import { HttpManager } from './utils/http';
-import {extractHandleId, extractURL, fetchHandleDataFromAPI} from "./manager";
+import {extractHandleId, fetchHandleDataFromAPI} from "./manager";
+import {UnsupportedMethodException, UnsupportedProcessException} from "./utils/error";
+import dayjs from "dayjs";
 
 export { HttpManager, HttpError } from './utils/http';
 export type {
@@ -107,7 +111,8 @@ const adapter: Adapter = {
     });
 
     // 注册转发请求处理器
-    ctx.on('onRepostRequest', (req) => handle(req, ctx, { apiKey }));
+    ctx.on('onRepostRequest', (req) => handleRepostRequest(req, ctx, {}));
+    ctx.on('onProcessRequest', (req) => handleProcessingRequest(req, ctx, {}));
 
     ctx.logger.info(`[${CONST.provider}] Adapter initialized.`);
   },
@@ -132,61 +137,107 @@ const adapter: Adapter = {
 //
 // ============================================================================
 
-async function handle(
-  req: RepostAdapterRequestParams,
+async function handleRepostRequest(
+  req: AdapterRepostRequestParams,
   ctx: AdapterContext,
-  options: AdapterOptions
-): Promise<RepostAdapterResponsePayload | null> {
-  ctx.logger.debug(`[${CONST.provider}] fetching ${req.source}`);
+  _options: object,
+): Promise<AdapterRepostResponsePayload | null> {
+  const { helper, logger } = ctx;
 
-  // TODO: 1) 从 req.source 解析出 Handle Id
-  const [handleMethod, handleId] = extractHandleId(req.source, 1);
+  logger.debug(`[${CONST.provider}] fetching ${req.source}`);
 
-  // TODO: 2) 调用平台 API 拿到原始数据
+  // 从 req.source 解析出 Handle Info
+  const [handleMethod, handleId] = extractHandleId(req.source);
+
+  // 不支持的转发模式
+  if (!handleMethod || !handleId || handleMethod === "live")
+    throw new UnsupportedMethodException(handleMethod, handleId);
+
+  // 调用平台 API 拿到原始数据
   const handleData = await fetchHandleDataFromAPI(INSTANCE.http!, handleMethod, handleId);
 
-  const postId = "";
-  const publishAt = new Date();
+  // 函数：构建 Post
+  const fnBuildPost = (): Omit<
+    AdapterRepostResponsePayload,
+    'postId' | 'method' | "code" | "originalUrl" | "provider" | "requester"
+  > => {
+    const payload = handleData as unknown;
 
-  const requesterUserId = "";
-  const requesterNickname = "";
+    return {
+      publishAt: dayjs.unix(10000000000).toDate(),
 
-  const authorNickname = "";
+      author: {
+        nickname: "",
+      },
 
-  // TODO: 3) 转换成标准 response 格式
-  return {
-    code: req.code,
-    provider: CONST.provider,
-    originalUrl: req.source,
-    method: "post",
+      content: "",
 
-    postId: postId,
-    publishAt: publishAt,
+      badges: [
+        [
+          { emoji: "👀", name: helper.extraHumanable("浏览", 0, "次") },
+        ]
+      ],
 
-    requester: {
-      userId: requesterUserId,
-      nickname: requesterNickname,
-    },
-    author: {
-      nickname: authorNickname,
-    },
-
-    title: "",
-    content: `TODO: real content from ${req.source}`,
-    cover: "",
-    images: [],
-    overlayCoverBuffer: undefined,
-    child: undefined,
-    badges: [],
-    strawberry: undefined,
-    watermelon: undefined,
-
-    useProxy: false,
-    useTranslator: false,
-
-    canvasWidth: undefined,
-    extra: undefined,
+      strawberry: {
+        emoji: "🖼",
+        feature: "原图",
+      },
+    };
   };
+
+  // 函数：构建 Profile
+  const fnBuildProfile = (): Omit<
+    AdapterRepostResponsePayload,
+    'postId' | 'method' | "code" | "originalUrl" | "provider" | "requester"
+  > => {
+    const payload = handleData as unknown;
+
+    return {
+      author: {
+        nickname: "",
+      },
+
+      content: "",
+
+      badges: [
+        [
+          { emoji: "👀", name: helper.extraHumanable("浏览", 0, "次") },
+        ]
+      ],
+    }
+  }
+
+  // 转换成标准 response 格式
+  return {
+    method: handleMethod,
+    provider: CONST.provider,
+    code: req.code,
+    originalUrl: req.source,
+    requester: req.requester,
+
+    postId: handleId,
+
+    ...(handleMethod === "post" ? fnBuildPost() : fnBuildProfile()),
+  };
+}
+
+async function handleProcessingRequest(
+  req: AdapterProcessRequestParams,
+  ctx: AdapterContext,
+  _options: object
+): Promise<AdapterProcessResponsePayload | null> {
+  const { logger } = ctx;
+  const { method, source, requester, code } = req;
+
+  logger.debug(`[${CONST.provider}] fetching ${method}: ${source}`);
+
+  // 获取原图
+  if (method === 'strawberry') {
+
+  }
+
+  // 抛出不支持的进程
+  throw new UnsupportedProcessException(method, source);
 }
 
 export default adapter;

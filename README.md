@@ -1,6 +1,6 @@
-# repost-adapter-starter
+# repost-adapter-PROVIDER_NAME
 
-A starter template for building custom adapters for [`@snowball-bot/repost-adapter`](https://www.npmjs.com/package/@snowball-bot/repost-adapter).
+PROVIDER_NAME repost adapter for Snowball Bot v3.
 
 Clone this repo, follow the checklist below, and you'll have a working adapter ready to publish.
 

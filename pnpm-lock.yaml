@@ -9,8 +9,11 @@ importers:
   .:
     dependencies:
       '@snowball-bot/repost-adapter':
-        specifier: ^1.0.4
-        version: 1.0.4
+        specifier: ^1.0.8
+        version: 1.0.8
+      dayjs:
+        specifier: ^1.11.21
+        version: 1.11.21
     devDependencies:
       '@types/node':
         specifier: ^20.0.0
@@ -704,8 +707,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@snowball-bot/repost-adapter@1.0.4':
-    resolution: {integrity: sha512-fkG13eEKwP61D9Wx14/hnoftW07W2qXVvGFTvRChtrmqGJQedT0ywphZ/lE+rICKn8J5XmOzM6M/244ckT9/gA==}
+  '@snowball-bot/repost-adapter@1.0.8':
+    resolution: {integrity: sha512-bVFBSOV94R7Wey/onJbhRT5uZ8MG4kE83DIXkkdFsVtyVKF+uKPCL2Av68iNsIm0EZtxvY4MrY0yaXJolR6teA==}
     engines: {node: '>=18'}
 
   '@types/estree@1.0.8':
@@ -903,6 +906,9 @@ packages:
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
+
+  dayjs@1.11.21:
+    resolution: {integrity: sha512-98IT+HOahAisibz/yjKbzuOBwYcjJ7BCLPzARyHiyEBmRz4fatF+KPJszEHXsGYjUG234aH/cOjW1wwTbKUZlA==}
 
   debug@4.4.3:
     resolution: {integrity: sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==}
@@ -1839,7 +1845,7 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.60.4':
     optional: true
 
-  '@snowball-bot/repost-adapter@1.0.4': {}
+  '@snowball-bot/repost-adapter@1.0.8': {}
 
   '@types/estree@1.0.8': {}
 
@@ -2065,6 +2071,8 @@ snapshots:
       path-key: 3.1.1
       shebang-command: 2.0.0
       which: 2.0.2
+
+  dayjs@1.11.21: {}
 
   debug@4.4.3:
     dependencies:
