@@ -10,6 +10,7 @@ import { HttpManager } from './utils/http';
 import {extractHandleId, fetchHandleDataFromAPI} from "./manager";
 import {UnsupportedMethodException, UnsupportedProcessException} from "./utils/error";
 import dayjs from "dayjs";
+import {RepostExtraParams} from "./type";
 
 export { HttpManager, HttpError } from './utils/http';
 export type {
@@ -95,11 +96,6 @@ const adapter: Adapter = {
     // 读取配置（可选）。配置由核心通过 `ctx.config(key)` 提供。
     // 比如 API key、限流参数等，建议把所有可调项都从 config 取。
     const apiKey = ctx.config<string>('apiKey');
-    if (!apiKey) {
-      ctx.logger.warn(
-        `[${CONST.provider}] no apiKey configured, falling back to public API`
-      );
-    }
 
     // 创建 HTTP 客户端 (基于 fetch), 统一处理 baseUrl / 鉴权 / 超时 / 重试
     INSTANCE.http = new HttpManager({
@@ -140,7 +136,7 @@ const adapter: Adapter = {
 async function handleRepostRequest(
   req: AdapterRepostRequestParams,
   ctx: AdapterContext,
-  _options: object,
+  _options: AdapterOptions,
 ): Promise<AdapterRepostResponsePayload | null> {
   const { helper, logger } = ctx;
 
@@ -158,7 +154,7 @@ async function handleRepostRequest(
 
   // 函数：构建 Post
   const fnBuildPost = (): Omit<
-    AdapterRepostResponsePayload,
+    AdapterRepostResponsePayload<RepostExtraParams>,
     'postId' | 'method' | "code" | "originalUrl" | "provider" | "requester"
   > => {
     const payload = handleData as unknown;
@@ -182,6 +178,10 @@ async function handleRepostRequest(
         emoji: "🖼",
         feature: "原图",
       },
+
+      extra: {
+
+      }
     };
   };
 
@@ -224,15 +224,16 @@ async function handleRepostRequest(
 async function handleProcessingRequest(
   req: AdapterProcessRequestParams,
   ctx: AdapterContext,
-  _options: object
+  _options: AdapterOptions
 ): Promise<AdapterProcessResponsePayload | null> {
   const { logger } = ctx;
-  const { method, source, requester, code } = req;
+  const { method, source, requester, code, repostMethod, extra: _extra } = req;
+  const extra = _extra as RepostExtraParams;
 
   logger.debug(`[${CONST.provider}] fetching ${method}: ${source}`);
 
-  // 获取原图
-  if (method === 'strawberry') {
+  // 草莓 + Post -> 获取原图
+  if (method === 'strawberry' && repostMethod === "post") {
 
   }
 
